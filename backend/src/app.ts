@@ -11,21 +11,36 @@ dotenv.config();
 
 const app = express();
 const defaultFrontendUrl = "http://localhost:5173";
-const allowedFrontendOrigins =
-  process.env.NODE_ENV === "production"
-    ? process.env.FRONTEND_URL ?? defaultFrontendUrl
-    : Array.from(
-        new Set([
-          process.env.FRONTEND_URL ?? defaultFrontendUrl,
-          defaultFrontendUrl,
-          "http://127.0.0.1:5173",
-        ]),
-      );
+const allowedFrontendOrigins = Array.from(
+  new Set([
+    ...(process.env.FRONTEND_URL
+      ? process.env.FRONTEND_URL.split(",").map((origin) => origin.trim())
+      : []),
+    ...(process.env.ALLOWED_ORIGINS
+      ? process.env.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim())
+      : []),
+    ...(process.env.NODE_ENV === "production"
+      ? []
+      : [defaultFrontendUrl, "http://127.0.0.1:5173"]),
+  ]),
+).filter(Boolean);
 
 // Global Middlewares
 app.use(
   cors({
-    origin: allowedFrontendOrigins,
+    origin: (origin, callback) => {
+      if (
+        !origin ||
+        allowedFrontendOrigins.includes(origin) ||
+        (process.env.NODE_ENV !== "production" &&
+          origin === "http://localhost:5173")
+      ) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error("Origin not allowed by CORS"));
+    },
     credentials: true,
   }),
 );
