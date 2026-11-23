@@ -1,0 +1,21 @@
+# ملفات الحزم والمكتبات (أكبر حاجة ملهاش لازمة تترفع)
+node_modules/
+
+# ملفات البيئة والأسرار (باسورد الداتا بيز، JWT Secret، إلخ)
+.env
+.env.local
+.env.*.local
+
+# ملفات الـ Build (لو شغال TypeScript)
+dist/
+build/
+
+# ملفات الـ Logs والأخطاء
+logs/
+*.log
+npm-debug.log*
+
+# ملفات نظام التشغيل والمحرر (VS Code / Windows)
+.DS_Store
+Thumbs.db
+.vscode/

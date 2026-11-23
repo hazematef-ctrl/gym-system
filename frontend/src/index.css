@@ -1,0 +1,18 @@
+@import "tailwindcss";
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "IBM Plex Sans Arabic", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+@theme {
+  --color-ink: #111118;
+  --color-paper: #F3F3EF;
+  --color-white: #FFFFFF;
+  --color-panel: #292D30;
+  --color-lime: #C4F000;
+  --color-muted: #B8BDC1;
+  --color-line: #62676B;
+  --color-blue: #3D6D86;
+  --color-stone: #CAC6B9;
+  --color-orange: #B56D43;
+}
