@@ -3,7 +3,8 @@ export class AppError extends Error {
   constructor(
     message: string,
     public statusCode: number,
-    public details?: unknown
+    public details?: unknown,
+    public code?: string,
   ) {
     super(message);
 

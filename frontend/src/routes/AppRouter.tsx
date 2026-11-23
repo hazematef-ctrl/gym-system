@@ -4,6 +4,8 @@ import LoginPage from "../features/auth/pages/LoginPage";
 import MemberHomePage from "../features/members/pages/MemberHomePage";
 import ProfilePage from "../features/members/pages/ProfilePage";
 import AdminPage from "../features/admin/pages/AdminPage";
+import AdminAttendancePage from "../features/admin/pages/AdminAttendancePage";
+import MemberDetailsPage from "../features/admin/pages/MemberDetailsPage";
 import ProtectedRoute from "./ProtectedRoute";
 import { useAuth } from "../features/auth/context/AuthContext";
 
@@ -40,6 +42,11 @@ function AppRouter() {
         </Route>
         <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/admin/scan" element={<AdminAttendancePage />} />
+          <Route
+            path="/admin/members/:memberId"
+            element={<MemberDetailsPage />}
+          />
         </Route>
         <Route element={<ProtectedRoute />}>
           <Route index element={<DashboardRedirect />} />

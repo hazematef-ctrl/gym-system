@@ -3,6 +3,7 @@ import {
   createUserSchema,
   changePasswordSchema,
   loginSchema,
+  memberPhotoParamsSchema,
   userSearchQuerySchema,
   userIdParamsSchema,
 } from "../schemas/user.schema.js";
@@ -19,12 +20,16 @@ import { authenticate, requireAdmin } from "../middlewares/auth.middleware.js";
 import { logoutController } from "../controllers/auth.controller.js";
 import {
   createUserController,
+  getMemberDetailsController,
   getUserByIdController,
   listUsersController,
+  removeMemberProfilePhotoController,
+  uploadMemberProfilePhotoController,
 } from "../controllers/admin.controller.js";
 import { verifyToken } from "../middlewares/jwt.middleware.js";
 import { authorizeRoles } from "../middlewares/authorization.middleware.js";
 import { verifyOwnership } from "../middlewares/ownership.middleware.js";
+import { receiveProfilePhoto } from "../middlewares/profile-photo-upload.middleware.js";
 const router = Router();
 
 router.post("/login", validateRequest(loginSchema), loginController);
@@ -54,6 +59,21 @@ router.post(
   validateRequest(createUserSchema),
   createUserController,
 );
+router.put(
+  "/:id/photo",
+  authenticate,
+  requireAdmin,
+  validateRequest(memberPhotoParamsSchema, "params"),
+  receiveProfilePhoto,
+  uploadMemberProfilePhotoController,
+);
+router.delete(
+  "/:id/photo",
+  authenticate,
+  requireAdmin,
+  validateRequest(memberPhotoParamsSchema, "params"),
+  removeMemberProfilePhotoController,
+);
 
 router.get("/profile", authenticate, profileController);
 
@@ -81,6 +101,13 @@ router.get(
   verifyToken,
   authorizeRoles("admin"),
   listUsersController,
+);
+router.get(
+  "/:id",
+  authenticate,
+  requireAdmin,
+  validateRequest(memberPhotoParamsSchema, "params"),
+  getMemberDetailsController,
 );
 
 export default router;

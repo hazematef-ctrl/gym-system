@@ -10,6 +10,7 @@ export const authenticate = (
   if (!req.session.userId) {
     return res.status(401).json({
       success: false,
+      code: "UNAUTHORIZED",
       message: "Unauthorized. Please login first.",
     });
   }
@@ -25,7 +26,14 @@ export const requireSessionRole = (...allowedRoles: string[]) => async (
   try {
     const userId = req.session.userId;
     if (!userId) {
-      return next(new AppError("Unauthorized. Please login first.", 401));
+      return next(
+        new AppError(
+          "Unauthorized. Please login first.",
+          401,
+          undefined,
+          "UNAUTHORIZED",
+        ),
+      );
     }
 
     const role = await userRepository.findRoleById(userId);
@@ -34,7 +42,14 @@ export const requireSessionRole = (...allowedRoles: string[]) => async (
       const requiredRoles = allowedRoles
         .map((allowedRole) => `${allowedRole[0]?.toUpperCase()}${allowedRole.slice(1)}`)
         .join(" or ");
-      return next(new AppError(`${requiredRoles} access required`, 403));
+      return next(
+        new AppError(
+          `${requiredRoles} access required`,
+          403,
+          undefined,
+          "FORBIDDEN",
+        ),
+      );
     }
 
     next();

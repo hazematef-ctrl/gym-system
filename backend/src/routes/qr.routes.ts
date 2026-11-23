@@ -1,11 +1,18 @@
 import { Router } from "express";
-import { generateDailyQrController } from "../controllers/qr.controller.js";
+import {
+  generateDailyQrController,
+  scanQrController,
+} from "../controllers/qr.controller.js";
 import {
   authenticate,
+  requireAdmin,
   requireMember,
 } from "../middlewares/auth.middleware.js";
 import { validateRequest } from "../middlewares/validation.js";
-import { generateQrSchema } from "../schemas/qr.schema.js";
+import {
+  generateQrSchema,
+  scanQrSchema,
+} from "../schemas/qr.schema.js";
 
 const router = Router();
 
@@ -15,6 +22,14 @@ router.post(
   requireMember,
   validateRequest(generateQrSchema),
   generateDailyQrController,
+);
+
+router.post(
+  "/scan",
+  authenticate,
+  requireAdmin,
+  validateRequest(scanQrSchema),
+  scanQrController,
 );
 
 export default router;

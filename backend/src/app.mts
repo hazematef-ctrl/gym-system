@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import userRoutes from "./routes/user.routes.js";
 import subscriptionRoutes from "./routes/subscription.routes.js";
 import qrRoutes from "./routes/qr.routes.js";
+import internalRoutes from "./routes/internal.routes.js";
 import { errorHandler } from "./middlewares/error-handler.middleware.js";
 import { sessionConfig } from "./config/session.js";
 dotenv.config();
@@ -51,6 +52,7 @@ app.use(sessionConfig);
 app.use("/api/users", userRoutes);
 app.use("/api/subscriptions", subscriptionRoutes);
 app.use("/api/qr", qrRoutes);
+app.use("/api/internal", internalRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({

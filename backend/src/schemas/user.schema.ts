@@ -60,6 +60,10 @@ export const userIdParamsSchema = z.object({
   id: z.string().regex(/^[A-Za-z0-9_-]{1,128}$/, "Invalid user ID"),
 }).strict();
 
+export const memberPhotoParamsSchema = z.object({
+  id: z.string().uuid("Invalid member ID"),
+}).strict();
+
 export type LoginDTO = z.infer<typeof loginSchema>;
 export type CreateUserDTO = z.infer<typeof createUserSchema>;
 export type ChangePasswordDTO = z.infer<typeof changePasswordSchema>;

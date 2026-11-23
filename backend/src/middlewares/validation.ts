@@ -19,7 +19,7 @@ export const validateRequest = (
       }));
 
       return next(
-        new AppError("Validation failed", 400, errors)
+        new AppError("Validation failed", 400, errors, "VALIDATION_ERROR")
       );
     }
 

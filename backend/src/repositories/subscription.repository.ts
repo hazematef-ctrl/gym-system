@@ -10,6 +10,17 @@ export type CurrentSubscriptionRow = {
   price: string;
 };
 
+export type SubscriptionHistoryRow = {
+  id: string;
+  status: "active" | "upcoming" | "expired" | "cancelled";
+  startDate: string;
+  endDate: string;
+  remainingDays: number;
+  durationDays: number;
+  price: string;
+  createdAt: Date;
+};
+
 export type InsertedSubscription = {
   id: string;
   status: "active";
@@ -22,6 +33,35 @@ export type ActiveSubscriptionRow = {
   id: string;
 };
 
+const subscriptionStatus = `CASE
+  WHEN s.status = 'cancelled' THEN 'cancelled'
+  WHEN s.status = 'active'
+    AND s.start_date <= business_day.business_date
+    AND s.end_date > business_day.business_date
+    THEN 'active'
+  WHEN s.status = 'active'
+    AND s.start_date > business_day.business_date
+    THEN 'upcoming'
+  ELSE 'expired'
+END`;
+
+const subscriptionRemainingDays = `CASE
+  WHEN s.status = 'active'
+    AND s.start_date <= business_day.business_date
+    AND s.end_date > business_day.business_date
+    THEN (s.end_date - business_day.business_date)::int
+  ELSE 0
+END`;
+
+const subscriptionDetails = `
+  ${subscriptionStatus} AS status,
+  to_char(s.start_date, 'YYYY-MM-DD') AS "startDate",
+  to_char(s.end_date, 'YYYY-MM-DD') AS "endDate",
+  ${subscriptionRemainingDays} AS "remainingDays",
+  (s.end_date - s.start_date)::int AS "durationDays",
+  s.price::text AS price
+`;
+
 export const subscriptionRepository = {
   findCurrentForUser: async (userId: string, timeZone: string) => {
     const result = await pool.query<CurrentSubscriptionRow>(
@@ -29,25 +69,7 @@ export const subscriptionRepository = {
         SELECT (now() AT TIME ZONE $2)::date AS business_date
       )
       SELECT
-        CASE
-          WHEN s.status = 'cancelled' THEN 'cancelled'
-          WHEN s.status = 'active'
-            AND s.start_date <= business_day.business_date
-            AND s.end_date > business_day.business_date
-            THEN 'active'
-          ELSE 'expired'
-        END AS status,
-        to_char(s.start_date, 'YYYY-MM-DD') AS "startDate",
-        to_char(s.end_date, 'YYYY-MM-DD') AS "endDate",
-        CASE
-          WHEN s.status = 'active'
-            AND s.start_date <= business_day.business_date
-            AND s.end_date > business_day.business_date
-            THEN (s.end_date - business_day.business_date)::int
-          ELSE 0
-        END AS "remainingDays",
-        (s.end_date - s.start_date)::int AS "durationDays",
-        s.price::text AS price
+        ${subscriptionDetails}
       FROM subscriptions s
       CROSS JOIN business_day
       WHERE s.user_id = $1
@@ -58,6 +80,28 @@ export const subscriptionRepository = {
     );
 
     return result.rows[0] ?? null;
+  },
+
+  findHistoryForUser: async (
+    userId: string,
+    timeZone: string,
+  ): Promise<SubscriptionHistoryRow[]> => {
+    const result = await pool.query<SubscriptionHistoryRow>(
+      `WITH business_day AS (
+        SELECT (now() AT TIME ZONE $2)::date AS business_date
+      )
+      SELECT
+        s.id,
+        ${subscriptionDetails},
+        s.created_at AS "createdAt"
+      FROM subscriptions s
+      CROSS JOIN business_day
+      WHERE s.user_id = $1
+      ORDER BY s.start_date DESC, s.created_at DESC`,
+      [userId, timeZone],
+    );
+
+    return result.rows;
   },
 
   findActiveForUser: async (
