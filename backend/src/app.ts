@@ -10,6 +10,10 @@ import { sessionConfig } from "./config/session.js";
 dotenv.config();
 
 const app = express();
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
+
 const defaultFrontendUrl = "http://localhost:5173";
 const allowedFrontendOrigins = Array.from(
   new Set([
@@ -27,21 +31,17 @@ const allowedFrontendOrigins = Array.from(
 
 // Global Middlewares
 app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (
-        !origin ||
-        allowedFrontendOrigins.includes(origin) ||
-        (process.env.NODE_ENV !== "production" &&
-          origin === "http://localhost:5173")
-      ) {
-        callback(null, true);
-        return;
-      }
+  cors((req, callback) => {
+    const origin = req.get("Origin");
+    const isSameOrigin =
+      origin !== undefined &&
+      origin === `${req.protocol}://${req.get("host")}`;
 
-      callback(new Error("Origin not allowed by CORS"));
-    },
-    credentials: true,
+    callback(null, {
+      origin:
+        !origin || isSameOrigin || allowedFrontendOrigins.includes(origin),
+      credentials: true,
+    });
   }),
 );
 app.use(express.json());

@@ -45,7 +45,7 @@ type ApiResponse<T> = {
 
 const defaultApiBaseUrl = import.meta.env.DEV
   ? `${window.location.protocol}//${window.location.hostname}:3000/api/users`
-  : "http://localhost:3000/api/users";
+  : "/api/users";
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? defaultApiBaseUrl;
 const SUBSCRIPTIONS_API_URL = API_BASE_URL.replace(/\/users\/?$/, "/subscriptions");
 const QR_API_URL = API_BASE_URL.replace(/\/users\/?$/, "/qr");
